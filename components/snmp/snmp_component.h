@@ -29,11 +29,10 @@ class SNMPComponent : public Component {
   void loop() override;
 
   void set_contact(const std::string &contact) { contact_ = contact; }
-
   void set_location(const std::string &location) { location_ = location; }
+
   void setup_sensor_mib_();
   void set_sensor_values(float temperature, float humidity, float lux);
-
 
  protected:
   WiFiUDP udp_;
@@ -54,9 +53,7 @@ class SNMPComponent : public Component {
 #endif
 
   static uint32_t get_uptime() { return millis() / 10; }
-
   static uint32_t get_net_uptime();
-
   static std::string get_bssid();
 
 #ifdef USE_ESP32
@@ -68,6 +65,11 @@ class SNMPComponent : public Component {
 
   /// location string
   std::string location_;
+
+  /// sensor values
+  float temperature_{NAN};
+  float humidity_{NAN};
+  float lux_{NAN};
 };
 
 }  // namespace snmp
