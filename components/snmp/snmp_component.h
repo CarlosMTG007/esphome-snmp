@@ -31,6 +31,9 @@ class SNMPComponent : public Component {
   void set_contact(const std::string &contact) { contact_ = contact; }
 
   void set_location(const std::string &location) { location_ = location; }
+  void setup_sensor_mib_();
+  void set_sensor_values(float temperature, float humidity, float lux);
+
 
  protected:
   WiFiUDP udp_;
