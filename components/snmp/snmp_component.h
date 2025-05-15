@@ -65,7 +65,6 @@ class SNMPComponent : public Component {
   // Sensor data for SNMP
   float temperature_{NAN};
   float humidity_{NAN};
-  float lux_{NAN};
 };
 
 }  // namespace snmp
