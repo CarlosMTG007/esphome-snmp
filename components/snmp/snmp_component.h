@@ -55,7 +55,7 @@ class SNMPComponent : public Component {
   static uint32_t get_net_uptime();
   static std::string get_bssid();
 
-  std::string contact_;
+  std::string contact_;              
   std::string location_;
 
   // Variáveis estáticas para manter valores dos sensores
@@ -63,8 +63,9 @@ class SNMPComponent : public Component {
   static float humidity_;
 
   // Métodos estáticos compatíveis com GETINT_FUNC
-  static int get_temperature_int();
+  static int get_temperature_int(); 
   static int get_humidity_int();
+
 };
 
 }  // namespace snmp
