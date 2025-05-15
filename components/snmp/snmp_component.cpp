@@ -47,11 +47,11 @@ void SNMPComponent::set_sensor_values(float temperature, float humidity, float l
 }
 
 // Ponteiros de função compatíveis com SNMPAgent
-int get_temperature_global() {
+static int get_temperature_int() {
   return SNMPComponent::get_temperature_int();
 }
 
-int get_humidity_global() {
+static int get_humidity_int() {
   return SNMPComponent::get_humidity_int();
 }
 
