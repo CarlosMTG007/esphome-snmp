@@ -17,9 +17,6 @@
 namespace esphome {
 namespace snmp {
 
-/// The SNMP (Simple Network Management Protocol) component provides support for collecting and organizing
-/// information about managed devices on a network.
-
 class SNMPComponent : public Component {
  public:
   SNMPComponent() : snmp_agent_("public", "private") {}
@@ -32,7 +29,7 @@ class SNMPComponent : public Component {
   void set_contact(const std::string &contact) { contact_ = contact; }
   void set_location(const std::string &location) { location_ = location; }
 
-  void set_sensor_values(float temperature, float humidity, float lux);
+  void set_sensor_values(float temperature, float humidity);
 
  protected:
   WiFiUDP udp_;
@@ -62,9 +59,13 @@ class SNMPComponent : public Component {
   std::string contact_;
   std::string location_;
 
-  // Sensor data for SNMP
-  float temperature_{NAN};
-  float humidity_{NAN};
+  // Sensor data for SNMP (armazenamento estático para uso nas funções)
+  static float temperature_;
+  static float humidity_;
+
+  // SNMP-compatible static getters
+  static int get_temperature_int();
+  static int get_humidity_int();
 };
 
 }  // namespace snmp
