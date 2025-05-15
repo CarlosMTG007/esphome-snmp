@@ -47,18 +47,17 @@ void SNMPComponent::set_sensor_values(float temperature, float humidity, float l
 }
 
 // Ponteiros de função compatíveis com SNMPAgent
-int SNMPComponent::get_temperature_int() {
+static int get_temperature() {
   return std::isnan(temperature_) ? -9999 : static_cast<int>(temperature_ * 10);
 }
 
-int SNMPComponent::get_humidity_int() {
+static int get_humidity() {
   return std::isnan(humidity_) ? -9999 : static_cast<int>(humidity_ * 10);
 }
 
-// MIB de sensores (temperatura e umidade)
 void SNMPComponent::setup_sensor_mib_() {
-  snmp_agent_.addDynamicIntegerHandler("1.3.6.1.4.1.53864.1.0", my_get_int_function());
-  snmp_agent_.addDynamicIntegerHandler("1.3.6.1.4.1.53864.2.0", my_get_int_function());
+  snmp_agent_.addDynamicIntegerHandler("1.3.6.1.4.1.53864.1.0", get_temperature);
+  snmp_agent_.addDynamicIntegerHandler("1.3.6.1.4.1.53864.2.0", get_humidity);
 }
 
 // MIBs básicos — esqueleto para expansão
