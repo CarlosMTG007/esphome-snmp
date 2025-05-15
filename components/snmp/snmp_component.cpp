@@ -4,8 +4,6 @@
 #include "esphome/core/version.h"
 #include "esphome/components/wifi/wifi_component.h"
 
-// Integration test available: https://github.com/aquaticus/esphome_snmp_tests
-
 namespace esphome {
 namespace snmp {
 
@@ -13,6 +11,18 @@ namespace snmp {
 #define CUSTOM_SENSOR_OID CUSTOM_OID "5."
 
 static const char *const TAG = "snmp";
+
+// Variáveis globais para sensores
+static float g_temperature = NAN;
+static float g_humidity = NAN;
+
+int SNMPComponent::get_temperature_int() {
+  return isnan(g_temperature) ? -9999 : static_cast<int>(g_temperature * 10);
+}
+
+int SNMPComponent::get_humidity_int() {
+  return isnan(g_humidity) ? -9999 : static_cast<int>(g_humidity * 10);
+}
 
 uint32_t SNMPComponent::get_net_uptime() {
 #ifdef WIFI_CONNECTED_TIMESTAMP_AVAILABLE
@@ -49,9 +59,7 @@ int SNMPComponent::setup_psram_size(int *used) {
   *used = 0;
 
   size_t free_size = heap_caps_get_free_size(MALLOC_CAP_SPIRAM);
-  bool available = free_size > 0;
-
-  if (available) {
+  if (free_size > 0) {
     total_size = heap_caps_get_total_size(MALLOC_CAP_SPIRAM);
     if (total_size > 0) {
       *used = total_size - free_size;
@@ -155,12 +163,8 @@ void SNMPComponent::setup_wifi_mib_() {
 }
 
 void SNMPComponent::setup_sensor_mib_() {
-  snmp_agent_.addDynamicIntegerHandler(CUSTOM_SENSOR_OID "1.0", [this]() -> int {
-    return isnan(this->temperature_) ? -9999 : static_cast<int>(this->temperature_ * 10);
-  });
-  snmp_agent_.addDynamicIntegerHandler(CUSTOM_SENSOR_OID "2.0", [this]() -> int {
-    return isnan(this->humidity_) ? -9999 : static_cast<int>(this->humidity_ * 10);
-  });
+  snmp_agent_.addDynamicIntegerHandler(CUSTOM_SENSOR_OID "1.0", SNMPComponent::get_temperature_int);
+  snmp_agent_.addDynamicIntegerHandler(CUSTOM_SENSOR_OID "2.0", SNMPComponent::get_humidity_int);
 }
 
 void SNMPComponent::setup() {
@@ -192,37 +196,30 @@ void SNMPComponent::dump_config() {
   ESP_LOGCONFIG(TAG, "  Location: \"%s\"", location_.c_str());
 }
 
-void SNMPComponent::loop() { snmp_agent_.loop(); }
+void SNMPComponent::loop() {
+  snmp_agent_.loop();
+}
 
 #ifdef USE_ESP32
 int SNMPComponent::get_ram_size_kb() {
-  const int chip_esp32 = 1;
-  const int chip_esp32_s2 = 2;
-  const int chip_esp32_s3 = 9;
-  const int chip_esp32_c3 = 5;
-  const int chip_esp32_h2 = 6;
-  const int chip_esp32_c2 = 12;
-  const int chip_esp32_c6 = 13;
-
   esp_chip_info_t chip_info;
   esp_chip_info(&chip_info);
-
   switch ((int) chip_info.model) {
-    case chip_esp32: return 520;
-    case chip_esp32_s2: return 320;
-    case chip_esp32_s3: return 512;
-    case chip_esp32_c2:
-    case chip_esp32_c3:
-    case chip_esp32_c6: return 400;
-    case chip_esp32_h2: return 256;
+    case 1: return 520;  // ESP32
+    case 2: return 320;  // S2
+    case 9: return 512;  // S3
+    case 5: return 400;  // C3
+    case 6: return 256;  // H2
+    case 12:
+    case 13: return 400; // C2/C6
   }
   return 0;
 }
 #endif
 
-void SNMPComponent::set_sensor_values(float temperature, float humidity, float lux) {
-  this->temperature_ = temperature;
-  this->humidity_ = humidity;
+void SNMPComponent::set_sensor_values(float temperature, float humidity) {
+  g_temperature = temperature;
+  g_humidity = humidity;
 }
 
 }  // namespace snmp
