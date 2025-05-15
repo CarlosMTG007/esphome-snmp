@@ -30,7 +30,10 @@ void SNMPComponent::setup() {
 void SNMPComponent::loop() {
   snmp_agent_.listen();
 }
-
+ int my_get_int_function() {
+       // Your logic to return an integer
+       return 42; // Example return value
+ }
 void SNMPComponent::dump_config() {
   ESP_LOGCONFIG(TAG, "SNMP Component:");
   ESP_LOGCONFIG(TAG, "  Contact: %s", contact_.c_str());
@@ -54,8 +57,8 @@ int SNMPComponent::get_humidity_int() {
 
 // MIB de sensores (temperatura e umidade)
 void SNMPComponent::setup_sensor_mib_() {
-  snmp_agent_.addDynamicIntegerHandler("1.3.6.1.4.1.53864.1.0", get_temperature_int);
-  snmp_agent_.addDynamicIntegerHandler("1.3.6.1.4.1.53864.2.0", get_humidity_int);
+  snmp_agent_.addDynamicIntegerHandler("1.3.6.1.4.1.53864.1.0", my_get_int_function());
+  snmp_agent_.addDynamicIntegerHandler("1.3.6.1.4.1.53864.2.0", my_get_int_function());
 }
 
 // MIBs básicos — esqueleto para expansão
