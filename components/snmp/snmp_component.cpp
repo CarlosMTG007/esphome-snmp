@@ -161,9 +161,6 @@ void SNMPComponent::setup_sensor_mib_() {
   snmp_agent_.addDynamicIntegerHandler(CUSTOM_SENSOR_OID "2.0", [this]() -> int {
     return isnan(this->humidity_) ? -9999 : static_cast<int>(this->humidity_ * 10);
   });
-  snmp_agent_.addDynamicIntegerHandler(CUSTOM_SENSOR_OID "3.0", [this]() -> int {
-    return isnan(this->lux_) ? -9999 : static_cast<int>(this->lux_);
-  });
 }
 
 void SNMPComponent::setup() {
@@ -226,7 +223,6 @@ int SNMPComponent::get_ram_size_kb() {
 void SNMPComponent::set_sensor_values(float temperature, float humidity, float lux) {
   this->temperature_ = temperature;
   this->humidity_ = humidity;
-  this->lux_ = lux;
 }
 
 }  // namespace snmp
