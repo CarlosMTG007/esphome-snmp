@@ -22,10 +22,7 @@ void SNMPComponent::setup() {
   this->setup_esp32_heap_mib_();
 #endif
 
-#ifdef USE_ESP8266
-  this->setup_esp8266_heap_mib_();
-#endif
-}
+
 
 void SNMPComponent::loop() {
   snmp_agent_.listen();
@@ -40,7 +37,7 @@ void SNMPComponent::dump_config() {
   ESP_LOGCONFIG(TAG, "  Location: %s", location_.c_str());
 }
 
-void SNMPComponent::set_sensor_values(float temperature, float humidity, float lux) {
+static SNMPComponent::set_sensor_values(int temperature, int humidity, int lux) {
   temperature_ = temperature;
   humidity_ = humidity;
   // Se desejar adicionar lux futuramente, adicione uma variável static semelhante
