@@ -1,52 +1,71 @@
-#include "snmp_component.h"
+#pragma once
+
+#include <string>
+#include "esphome/core/component.h"
+#include "esphome/core/hal.h"
+#include "SNMP_Agent.h"
+
+#ifdef USE_ESP32
+#include <WiFi.h>
+#include <esp32/himem.h>
+#endif
+#ifdef USE_ESP8266
+#include <ESP8266WiFi.h>
+#endif
+#include <WiFiUdp.h>
 
 namespace esphome {
 namespace snmp {
 
-// Inicialização das variáveis estáticas
-float SNMPComponent::temperature_ = NAN;
-float SNMPComponent::humidity_ = NAN;
+class SNMPComponent : public Component {
+ public:
+  SNMPComponent() : snmp_agent_("public", "private") {}
 
-void SNMPComponent::setup() {
-  snmp_agent_.begin(161, &udp_);
-  this->setup_system_mib_();
-  this->setup_storage_mib_();
-  this->setup_chip_mib_();
-  this->setup_wifi_mib_();
-  this->setup_sensor_mib_();
-}
+  void setup() override;
+  void dump_config() override;
+  float get_setup_priority() const override { return setup_priority::AFTER_WIFI; }
+  void loop() override;
 
-void SNMPComponent::loop() {
-  snmp_agent_.listen();
-}
+  void set_contact(const std::string &contact) { contact_ = contact; }
+  void set_location(const std::string &location) { location_ = location; }
 
-void SNMPComponent::dump_config() {
-  ESP_LOGCONFIG("snmp", "SNMP Component:");
-  ESP_LOGCONFIG("snmp", "  Contact: %s", contact_.c_str());
-  ESP_LOGCONFIG("snmp", "  Location: %s", location_.c_str());
-}
+  void set_sensor_values(float temperature, float humidity);
 
-void SNMPComponent::set_sensor_values(float temperature, float humidity) {
-  temperature_ = temperature;
-  humidity_ = humidity;
-}
+ protected:
+  WiFiUDP udp_;
+  SNMPAgent snmp_agent_;
 
-// SNMP sensor handler functions
-int SNMPComponent::get_temperature_int() {
-  return isnan(temperature_) ? -9999 : static_cast<int>(temperature_ * 10);
-}
+  void setup_system_mib_();
+  void setup_storage_mib_();
+  void setup_chip_mib_();
+  void setup_wifi_mib_();
+  void setup_sensor_mib_();
 
-int SNMPComponent::get_humidity_int() {
-  return isnan(humidity_) ? -9999 : static_cast<int>(humidity_ * 10);
-}
+#ifdef USE_ESP32
+  void setup_esp32_heap_mib_();
+  static int setup_psram_size(int *used);
+  static int get_ram_size_kb();
+#endif
 
-// MIB com sensores
-void SNMPComponent::setup_sensor_mib_() {
-  snmp_agent_.addDynamicIntegerHandler("1.3.6.1.4.1.53864.1.0", get_temperature_int); // temperature
-  snmp_agent_.addDynamicIntegerHandler("1.3.6.1.4.1.53864.2.0", get_humidity_int);    // humidity
-}
+#ifdef USE_ESP8266
+  void setup_esp8266_heap_mib_();
+#endif
 
-// ... (outros métodos como setup_system_mib_, etc., não alterados)
+  static uint32_t get_uptime();
+  static uint32_t get_net_uptime();
+  static std::string get_bssid();
+
+  std::string contact_;
+  std::string location_;
+
+  // Variáveis estáticas para manter valores dos sensores
+  static float temperature_;
+  static float humidity_;
+
+  // Métodos estáticos compatíveis com GETINT_FUNC
+  static int get_temperature_int();
+  static int get_humidity_int();
+};
 
 }  // namespace snmp
 }  // namespace esphome
